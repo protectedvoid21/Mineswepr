@@ -1,0 +1,76 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5041151892945224604
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3477405749266911043}
+  - component: {fileID: 3732914606355188424}
+  m_Layer: 5
+  m_Name: TutorialExample Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &3477405749266911043
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5041151892945224604}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: -1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &3732914606355188424
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5041151892945224604}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d85424745d590b74baad5f0cac807c9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  steps:
+  - explanationText: Pierwszym krokiem jest klikniecie na jeden dowolny blok
+    stepSprite: {fileID: 21300000, guid: f0a356e96ad9c304ba1313690a1ccc69, type: 3}
+  - explanationText: Pierwsze klikniecie zawsze odslania pusty obszar az do momentu
+      napotkania pol graniczacych z minami
+    stepSprite: {fileID: 21300000, guid: 729c7cc9dc07a0f479fe80fbc2781d61, type: 3}
+  - explanationText: Po kliknieciu widzimy cyfry oznaczajace z iloma minami graniczy
+      dane pole (wlacznie na skos, maksymalnie moze graniczyc z 8 minami). Droga
+      dedukcji mozna zauwazyc, ze przy polach z cyfra 1 graniczy tylko jedno pole
+      co pozwala nam zalozyc, ze tam sa miny
+    stepSprite: {fileID: 21300000, guid: 2e03347c10b93bb4c80415210e56f08f, type: 3}
+  - explanationText: Wiedzac, ze w polu w lewym dolnym rogu musi byc mina mozemy
+      zauwazyc, ze skoro w polu z cyfra 1 (tym bedacym na lewo od pola z cyfra 3)
+      graniczy juz jedna mina, to reszta pol musi byc pusta. Mozemy dzieki temu bezpiecznie
+      odslonic kolejny blok
+    stepSprite: {fileID: 21300000, guid: 1fc75b43d34652b4ab7c734195700353, type: 3}
+  - explanationText: Aby moc odkryc ostatnie pole nalezy zauwazyc, ze pole z cyfra
+      2 (bedace nad polem z cyfra 3) graniczy jedynie z dwoma blokami. Pozwala nam
+      to stwierdzic, ze na tych polach musza byc miny dzieki czemu spelnia sie rowniez
+      warunek dla pola z cyfra 3. Dzieki tej informacji mozemy odkryc ostatnie pole.
+      W ten sposob ukonczylismy plansze, odkrylismy wszystkie pola na ktorych nie
+      ma min.
+    stepSprite: {fileID: 21300000, guid: 43cd417ec8e7be24db250d1d46acb74a, type: 3}
+  previousButton: {fileID: 0}
+  nextButton: {fileID: 0}
