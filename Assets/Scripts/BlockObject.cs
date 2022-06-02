@@ -15,8 +15,9 @@ public class BlockObject : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     private int x;
     private int y;
 
-    private bool isClicked;
-    private bool isFlagged;
+    public bool isClicked { get; private set; }
+    public bool isFlagged { get; private set; }
+    public bool isHinted => image.sprite == BlockAssets.instance.hinted;
 
     private void Awake() {
         gameManager = FindObjectOfType<GameManager>();
@@ -110,6 +111,12 @@ public class BlockObject : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         }
         else {
             image.sprite = BlockAssets.instance.numbers[block.number - 1];
+        }
+    }
+
+    public void MarkHinted() {
+        if (!isFlagged) {
+            image.sprite = BlockAssets.instance.hinted;
         }
     }
 }

@@ -4,13 +4,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
+using Unity.Mathematics;
 using Random = System.Random;
 
 public class BlockSpawner : MonoBehaviour {
-    private const int top = 1;
-    private const int right = 1;
-    private const int left = -1;
-    private const int down = -1;
+    private const int Top = 1;
+    private const int Right = 1;
+    private const int Left = -1;
+    private const int Down = -1;
 
     private Block[,] blocks;
     private BlockObject[,] blockObjects;
@@ -61,45 +63,45 @@ public class BlockSpawner : MonoBehaviour {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 if (blocks[x, y].isMine) {
-                    if (x + right != width && y + top != height) { // Upper right
-                        if (blocks[x + right, y + top].isMine == false) {
-                            blocks[x + right, y + top].number++;
+                    if (x + Right != width && y + Top != height) { // Upper right
+                        if (blocks[x + Right, y + Top].isMine == false) {
+                            blocks[x + Right, y + Top].number++;
                         }
                     }
-                    if (x + left >= 0 && y + top != height) { // Upper left
-                        if (blocks[x + left, y + top].isMine == false) {
-                            blocks[x + left, y + top].number++;
+                    if (x + Left >= 0 && y + Top != height) { // Upper left
+                        if (blocks[x + Left, y + Top].isMine == false) {
+                            blocks[x + Left, y + Top].number++;
                         }
                     }
-                    if (x + left >= 0 && y + down >= 0) { // Lower left
-                        if (blocks[x + left, y + down].isMine == false) {
-                            blocks[x + left, y + down].number++;
+                    if (x + Left >= 0 && y + Down >= 0) { // Lower left
+                        if (blocks[x + Left, y + Down].isMine == false) {
+                            blocks[x + Left, y + Down].number++;
                         }
                     }
-                    if (x + right != width && y + down >= 0) { // Lower right
-                        if (blocks[x + right, y + down].isMine == false) {
-                            blocks[x + right, y + down].number++;
+                    if (x + Right != width && y + Down >= 0) { // Lower right
+                        if (blocks[x + Right, y + Down].isMine == false) {
+                            blocks[x + Right, y + Down].number++;
                         }
                     }
 
-                    if (y + top != height) {
-                        if (blocks[x, y + top].isMine == false) {
-                            blocks[x, y + top].number++;
+                    if (y + Top != height) {
+                        if (blocks[x, y + Top].isMine == false) {
+                            blocks[x, y + Top].number++;
                         }
                     }
-                    if (y + down >= 0) {
-                        if (blocks[x, y + down].isMine == false) {
-                            blocks[x, y + down].number++;
+                    if (y + Down >= 0) {
+                        if (blocks[x, y + Down].isMine == false) {
+                            blocks[x, y + Down].number++;
                         }
                     }
-                    if (x + right != width) {
-                        if (blocks[x + right, y].isMine == false) {
-                            blocks[x + right, y].number++;
+                    if (x + Right != width) {
+                        if (blocks[x + Right, y].isMine == false) {
+                            blocks[x + Right, y].number++;
                         }
                     }
-                    if (x + left >= 0) {
-                        if (blocks[x + left, y].isMine == false) {
-                            blocks[x + left, y].number++;
+                    if (x + Left >= 0) {
+                        if (blocks[x + Left, y].isMine == false) {
+                            blocks[x + Left, y].number++;
                         }
                     }
                 }
@@ -118,31 +120,110 @@ public class BlockSpawner : MonoBehaviour {
 
         return createdBlock;
     }
-    
+
+    public void UseHint() {
+        if (blocks is null) {
+            return;
+        }
+
+        for(int x = 0; x < width; x++) {
+            for(int y = 0; y < height; y++) {
+                if(!blocks[x, y].isMine && blocks[x, y].number > 0) {
+                    if(GetNeighborUnclickedBlockCount(x, y, out List<int[]> neighborBlocks) == blocks[x, y].number) {
+                        foreach (var block in neighborBlocks) {
+                            if (!blockObjects[block[0], block[1]].isFlagged && !blockObjects[block[0], block[1]].isHinted) {
+                                blockObjects[block[0], block[1]].MarkHinted();
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private int GetNeighborUnclickedBlockCount(int x, int y, out List<int[]> neighborBlocks) {
+        int blockCount = 0;
+        neighborBlocks = new List<int[]>();
+
+        if(x > 0) {
+            if(!blockObjects[x + Left, y].isClicked) {
+                neighborBlocks.Add(new int[] { x + Left, y });
+                blockCount++;
+            }
+
+            if(y > 0) {
+                if(!blockObjects[x + Left, y + Down].isClicked) {
+                    neighborBlocks.Add(new int[] { x + Left, y + Down });
+                    blockCount++;
+                }
+            }
+            if(y + 1 < height) {
+                if(!blockObjects[x + Left, y + Top].isClicked) {
+                    neighborBlocks.Add(new int[] { x + Left, y + Top });
+                    blockCount++;
+                }
+            }
+        }
+        if(x + 1 < width) {
+            if(!blockObjects[x + Right, y].isClicked) {
+                neighborBlocks.Add(new int[] { x + Right, y });
+                blockCount++;
+            }
+
+            if(y > 0) {
+                if(!blockObjects[x + Right, y + Down].isClicked) {
+                    neighborBlocks.Add(new int[] { x + Right, y + Down });
+                    blockCount++;
+                }
+            }
+            if(y + 1 < height) {
+                if(!blockObjects[x + Right, y + Top].isClicked) {
+                    neighborBlocks.Add(new int[] { x + Right, y + Top });
+                    blockCount++;
+                }
+            }
+        }
+
+        if(y > 0) {
+            if(!blockObjects[x, y + Down].isClicked) {
+                neighborBlocks.Add(new int[] { x, y + Down });
+                blockCount++;
+            }
+        }
+        if(y + 1 < height) {
+            if(!blockObjects[x, y + Top].isClicked) {
+                neighborBlocks.Add(new int[] { x, y + Top });
+                blockCount++;
+            }
+        }
+        return blockCount;
+    }
+
     public void RevealClearRegion(int x, int y) {
-        if (x + right != width && y + top != height) { // Upper right
-            blockObjects[x + right, y + top].Reveal();
+        if (x + Right != width && y + Top != height) { // Upper right
+            blockObjects[x + Right, y + Top].Reveal();
         }
-        if (x + left >= 0 && y + top != height) { // Upper left
-            blockObjects[x + left, y + top].Reveal();
+        if (x + Left >= 0 && y + Top != height) { // Upper left
+            blockObjects[x + Left, y + Top].Reveal();
         }
-        if (x + left >= 0 && y + down >= 0) { // Lower left
-            blockObjects[x + left, y + down].Reveal();
+        if (x + Left >= 0 && y + Down >= 0) { // Lower left
+            blockObjects[x + Left, y + Down].Reveal();
         }
-        if (x + right != width && y + down >= 0) { // Lower right
-            blockObjects[x + right, y + down].Reveal();
+        if (x + Right != width && y + Down >= 0) { // Lower right
+            blockObjects[x + Right, y + Down].Reveal();
         } 
-        if (y + top != height) {
-            blockObjects[x, y + top].Reveal();
+        if (y + Top != height) {
+            blockObjects[x, y + Top].Reveal();
         }
-        if (y + down >= 0) {
-            blockObjects[x, y + down].Reveal();
+        if (y + Down >= 0) {
+            blockObjects[x, y + Down].Reveal();
         }
-        if (x + right != width) {
-            blockObjects[x + right, y].Reveal();
+        if (x + Right != width) {
+            blockObjects[x + Right, y].Reveal();
         }
-        if (x + left >= 0) {
-            blockObjects[x + left, y].Reveal();
+        if (x + Left >= 0) {
+            blockObjects[x + Left, y].Reveal();
         }
     }
 
