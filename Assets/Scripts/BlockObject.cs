@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -47,7 +45,7 @@ public class BlockObject : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     }
 
     public void OnPointerClick(PointerEventData eventData) {
-        if(isClicked) {
+        if(isClicked || isHinted) {
             return;
         }
         if(eventData.button == PointerEventData.InputButton.Left && !isFlagged) {

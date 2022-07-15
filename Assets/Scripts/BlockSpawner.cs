@@ -1,12 +1,7 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using Unity.Mathematics;
-using Random = System.Random;
 
 public class BlockSpawner : MonoBehaviour {
     private const int Top = 1;
@@ -16,6 +11,7 @@ public class BlockSpawner : MonoBehaviour {
 
     private Block[,] blocks;
     private BlockObject[,] blockObjects;
+    [SerializeField] private GameManager gameManager;
     [SerializeField] private BlockObject blockObject;
 
     [SerializeField] private Transform parentTransform;
@@ -29,6 +25,8 @@ public class BlockSpawner : MonoBehaviour {
         width = PlayerPrefs.GetInt("Width", 10);
         height = PlayerPrefs.GetInt("Height", 10);
         bombCount = PlayerPrefs.GetInt("Bombs", 15);
+
+        gameManager = FindObjectOfType<GameManager>();
         
         blockObjects = new BlockObject[width, height];
         
@@ -49,12 +47,24 @@ public class BlockSpawner : MonoBehaviour {
         }
 
         System.Random rng = new System.Random();
+        GetNeighborUnclickedBlockCount(clickedX, clickedY, out List<int[]> neighborBlocks);
         int bombs = bombCount;
         while (bombs != 0) {
             int randX = rng.Next(width - 1);
             int randY = rng.Next(height - 1);
 
+            bool neighborMineFound = false;
+
             if(!blocks[randX, randY].isMine && randX != clickedX && randY != clickedY) {
+                foreach (var block in neighborBlocks) {
+                    if (randX == block[0] && randY == block[1]) {
+                        neighborMineFound = true;
+                        break;
+                    }
+                }
+                if (neighborMineFound) {
+                    continue;
+                }
                 blocks[randX, randY].isMine = true;
                 bombs--;
             }
@@ -133,6 +143,7 @@ public class BlockSpawner : MonoBehaviour {
                         foreach (var block in neighborBlocks) {
                             if (!blockObjects[block[0], block[1]].isFlagged && !blockObjects[block[0], block[1]].isHinted) {
                                 blockObjects[block[0], block[1]].MarkHinted();
+                                gameManager.AddMineToText(-1);
                                 return;
                             }
                         }
