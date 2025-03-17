@@ -1,66 +1,87 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GameManager : MonoBehaviour {
-    private BlockSpawner blockSpawner;
-    
+public class GameManager : MonoBehaviour
+{
+    private BlockSpawner _blockSpawner;
+
     public bool IsFirstClicked { get; private set; }
 
-    private int activeBlocks;
-    private int mineCountTextValue;
-    private int minutes;
-    private int seconds;
-    [SerializeField] private Text mineText;
-    [SerializeField] private Text timeText;
-    [SerializeField] private Text wonTimeText;
-    [SerializeField] private GameObject restartButton;
-    [SerializeField] private GameObject gameWonPanel;
-    
-    private void Awake() {
+    private int _activeBlocks;
+    private int _mineCountTextValue;
+    private int _minutes;
+    private int _seconds;
+
+    [SerializeField]
+    private Text mineText;
+
+    [SerializeField]
+    private Text timeText;
+
+    [SerializeField]
+    private Text wonTimeText;
+
+    [SerializeField]
+    private GameObject restartButton;
+
+    [SerializeField]
+    private GameObject gameWonPanel;
+
+    private void Awake()
+    {
         Time.timeScale = 1;
-        blockSpawner = FindObjectOfType<BlockSpawner>();
-        mineText.text = blockSpawner.bombCount.ToString();
-        mineCountTextValue = blockSpawner.bombCount;
-        activeBlocks = blockSpawner.height * blockSpawner.width;
+        _blockSpawner = FindObjectOfType<BlockSpawner>();
+        mineText.text = _blockSpawner.BombCount.ToString();
+        _mineCountTextValue = _blockSpawner.BombCount;
+        _activeBlocks = _blockSpawner.Height * _blockSpawner.Width;
         InvokeRepeating("ChangeTimeText", 0f, 1f);
     }
 
-    public void FirstClick() {
+    public void FirstClick()
+    {
         IsFirstClicked = true;
     }
 
-    private void ChangeTimeText() {
-        if(seconds == 60) {
-            minutes++;
-            seconds = 0;
+    private void ChangeTimeText()
+    {
+        if (_seconds == 60)
+        {
+            _minutes++;
+            _seconds = 0;
         }
-        string secondsText = seconds < 10 ? "0" + seconds.ToString() : seconds.ToString();
-        timeText.text = $"{minutes}:{secondsText}";
-        seconds++;
+
+        string secondsText = _seconds < 10 ? "0" + _seconds.ToString() : _seconds.ToString();
+        timeText.text = $"{_minutes}:{secondsText}";
+        _seconds++;
     }
 
-    public void AddMineToText(int value) {
-        mineCountTextValue += value;
-        mineText.text = mineCountTextValue.ToString();
+    public void AddMineToText(int value)
+    {
+        _mineCountTextValue += value;
+        mineText.text = _mineCountTextValue.ToString();
     }
 
-    public void DecreaseBombCount() {
-        activeBlocks--;
+    public void DecreaseBombCount()
+    {
+        _activeBlocks--;
 
-        if(activeBlocks == blockSpawner.bombCount) {
+        if (_activeBlocks == _blockSpawner.BombCount)
+        {
             Win();
         }
     }
-    
-    private void Win() {
+
+    private void Win()
+    {
         gameWonPanel.SetActive(true);
         wonTimeText.text = timeText.text;
         timeText.gameObject.SetActive(false);
         Time.timeScale = 0;
     }
 
-    public void GameOver() {
-        blockSpawner.RevealAllBombs();
+    public void GameOver()
+    {
+        _blockSpawner.RevealAllBombs();
         CancelInvoke("ChangeTimeText");
         restartButton.SetActive(true);
     }

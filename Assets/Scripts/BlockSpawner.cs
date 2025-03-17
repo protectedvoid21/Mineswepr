@@ -3,124 +3,176 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class BlockSpawner : MonoBehaviour {
+public class BlockSpawner : MonoBehaviour
+{
     private const int Top = 1;
     private const int Right = 1;
     private const int Left = -1;
     private const int Down = -1;
 
-    private Block[,] blocks;
-    private BlockObject[,] blockObjects;
-    [SerializeField] private GameManager gameManager;
-    [SerializeField] private BlockObject blockObject;
+    private Block[,] _blocks;
+    private BlockObject[,] _blockObjects;
 
-    [SerializeField] private Transform parentTransform;
-    [SerializeField] private RectTransform startPosition;
-    
-    public int width { get; private set; }
-    public int height { get; private set; }
-    public int bombCount { get; private set; }
+    [SerializeField]
+    private GameManager gameManager;
 
-    private void Awake() {
-        width = PlayerPrefs.GetInt("Width", 10);
-        height = PlayerPrefs.GetInt("Height", 10);
-        bombCount = PlayerPrefs.GetInt("Bombs", 15);
+    [SerializeField]
+    private BlockObject blockObject;
+
+    [SerializeField]
+    private Transform parentTransform;
+
+    [SerializeField]
+    private RectTransform startPosition;
+
+    public int Width { get; private set; }
+    public int Height { get; private set; }
+    public int BombCount { get; private set; }
+
+    private void Awake()
+    {
+        Width = PlayerPrefs.GetInt("Width", 10);
+        Height = PlayerPrefs.GetInt("Height", 10);
+        BombCount = PlayerPrefs.GetInt("Bombs", 15);
 
         gameManager = FindObjectOfType<GameManager>();
-        
-        blockObjects = new BlockObject[width, height];
-        
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                blockObjects[x, y] = SpawnBlock(x, y);
+
+        _blockObjects = new BlockObject[Width, Height];
+
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                _blockObjects[x, y] = SpawnBlock(x, y);
             }
         }
     }
 
-    public void GenerateMap(int clickedX, int clickedY) {
+    public void GenerateMap(int clickedX, int clickedY)
+    {
         blockObject.GetComponent<Image>().sprite = BlockAssets.instance.defaultBlock;
-        blocks = new Block[width, height];
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                blocks[x, y] = new Block();
+        _blocks = new Block[Width, Height];
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                _blocks[x, y] = new Block();
             }
         }
 
         System.Random rng = new System.Random();
         GetNeighborUnclickedBlockCount(clickedX, clickedY, out List<int[]> neighborBlocks);
-        int bombs = bombCount;
-        while (bombs != 0) {
-            int randX = rng.Next(width - 1);
-            int randY = rng.Next(height - 1);
+        int bombs = BombCount;
+        while (bombs != 0)
+        {
+            int randX = rng.Next(Width - 1);
+            int randY = rng.Next(Height - 1);
 
             bool neighborMineFound = false;
 
-            if(!blocks[randX, randY].isMine && randX != clickedX && randY != clickedY) {
-                foreach (var block in neighborBlocks) {
-                    if (randX == block[0] && randY == block[1]) {
+            if (!_blocks[randX, randY].IsMine && randX != clickedX && randY != clickedY)
+            {
+                foreach (var block in neighborBlocks)
+                {
+                    if (randX == block[0] && randY == block[1])
+                    {
                         neighborMineFound = true;
                         break;
                     }
                 }
-                if (neighborMineFound) {
+
+                if (neighborMineFound)
+                {
                     continue;
                 }
-                blocks[randX, randY].isMine = true;
+
+                _blocks[randX, randY].IsMine = true;
                 bombs--;
             }
         }
 
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                if (blocks[x, y].isMine) {
-                    if (x + Right != width && y + Top != height) { // Upper right
-                        if (blocks[x + Right, y + Top].isMine == false) {
-                            blocks[x + Right, y + Top].number++;
-                        }
-                    }
-                    if (x + Left >= 0 && y + Top != height) { // Upper left
-                        if (blocks[x + Left, y + Top].isMine == false) {
-                            blocks[x + Left, y + Top].number++;
-                        }
-                    }
-                    if (x + Left >= 0 && y + Down >= 0) { // Lower left
-                        if (blocks[x + Left, y + Down].isMine == false) {
-                            blocks[x + Left, y + Down].number++;
-                        }
-                    }
-                    if (x + Right != width && y + Down >= 0) { // Lower right
-                        if (blocks[x + Right, y + Down].isMine == false) {
-                            blocks[x + Right, y + Down].number++;
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                if (_blocks[x, y].IsMine)
+                {
+                    if (x + Right != Width && y + Top != Height)
+                    {
+                        // Upper right
+                        if (_blocks[x + Right, y + Top].IsMine == false)
+                        {
+                            _blocks[x + Right, y + Top].Number++;
                         }
                     }
 
-                    if (y + Top != height) {
-                        if (blocks[x, y + Top].isMine == false) {
-                            blocks[x, y + Top].number++;
+                    if (x + Left >= 0 && y + Top != Height)
+                    {
+                        // Upper left
+                        if (_blocks[x + Left, y + Top].IsMine == false)
+                        {
+                            _blocks[x + Left, y + Top].Number++;
                         }
                     }
-                    if (y + Down >= 0) {
-                        if (blocks[x, y + Down].isMine == false) {
-                            blocks[x, y + Down].number++;
+
+                    if (x + Left >= 0 && y + Down >= 0)
+                    {
+                        // Lower left
+                        if (_blocks[x + Left, y + Down].IsMine == false)
+                        {
+                            _blocks[x + Left, y + Down].Number++;
                         }
                     }
-                    if (x + Right != width) {
-                        if (blocks[x + Right, y].isMine == false) {
-                            blocks[x + Right, y].number++;
+
+                    if (x + Right != Width && y + Down >= 0)
+                    {
+                        // Lower right
+                        if (_blocks[x + Right, y + Down].IsMine == false)
+                        {
+                            _blocks[x + Right, y + Down].Number++;
                         }
                     }
-                    if (x + Left >= 0) {
-                        if (blocks[x + Left, y].isMine == false) {
-                            blocks[x + Left, y].number++;
+
+                    if (y + Top != Height)
+                    {
+                        if (_blocks[x, y + Top].IsMine == false)
+                        {
+                            _blocks[x, y + Top].Number++;
+                        }
+                    }
+
+                    if (y + Down >= 0)
+                    {
+                        if (_blocks[x, y + Down].IsMine == false)
+                        {
+                            _blocks[x, y + Down].Number++;
+                        }
+                    }
+
+                    if (x + Right != Width)
+                    {
+                        if (_blocks[x + Right, y].IsMine == false)
+                        {
+                            _blocks[x + Right, y].Number++;
+                        }
+                    }
+
+                    if (x + Left >= 0)
+                    {
+                        if (_blocks[x + Left, y].IsMine == false)
+                        {
+                            _blocks[x + Left, y].Number++;
                         }
                     }
                 }
-                blockObjects[x, y].SetBlock(blocks[x, y]);
+
+                _blockObjects[x, y].SetBlock(_blocks[x, y]);
             }
         }
     }
 
-    private BlockObject SpawnBlock(int x, int y) {
+    private BlockObject SpawnBlock(int x, int y)
+    {
         BlockObject createdBlock = Instantiate(blockObject, new Vector3(x, y), Quaternion.identity);
         createdBlock.Setup(x, y);
         createdBlock.transform.SetParent(parentTransform, false);
@@ -131,18 +183,27 @@ public class BlockSpawner : MonoBehaviour {
         return createdBlock;
     }
 
-    public void UseHint() {
-        if (blocks is null) {
+    public void UseHint()
+    {
+        if (_blocks is null)
+        {
             return;
         }
 
-        for(int x = 0; x < width; x++) {
-            for(int y = 0; y < height; y++) {
-                if(!blocks[x, y].isMine && blocks[x, y].number > 0) {
-                    if(GetNeighborUnclickedBlockCount(x, y, out List<int[]> neighborBlocks) == blocks[x, y].number) {
-                        foreach (var block in neighborBlocks) {
-                            if (!blockObjects[block[0], block[1]].isFlagged && !blockObjects[block[0], block[1]].isHinted) {
-                                blockObjects[block[0], block[1]].MarkHinted();
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                if (!_blocks[x, y].IsMine && _blocks[x, y].Number > 0)
+                {
+                    if (GetNeighborUnclickedBlockCount(x, y, out List<int[]> neighborBlocks) == _blocks[x, y].Number)
+                    {
+                        foreach (var block in neighborBlocks)
+                        {
+                            if (!_blockObjects[block[0], block[1]].IsFlagged &&
+                                !_blockObjects[block[0], block[1]].IsHinted)
+                            {
+                                _blockObjects[block[0], block[1]].MarkHinted();
                                 gameManager.AddMineToText(-1);
                                 return;
                             }
@@ -153,98 +214,145 @@ public class BlockSpawner : MonoBehaviour {
         }
     }
 
-    private int GetNeighborUnclickedBlockCount(int x, int y, out List<int[]> neighborBlocks) {
+    private int GetNeighborUnclickedBlockCount(int x, int y, out List<int[]> neighborBlocks)
+    {
         int blockCount = 0;
         neighborBlocks = new List<int[]>();
 
-        if(x > 0) {
-            if(!blockObjects[x + Left, y].isClicked) {
+        if (x > 0)
+        {
+            if (!_blockObjects[x + Left, y].IsClicked)
+            {
                 neighborBlocks.Add(new int[] { x + Left, y });
                 blockCount++;
             }
 
-            if(y > 0) {
-                if(!blockObjects[x + Left, y + Down].isClicked) {
+            if (y > 0)
+            {
+                if (!_blockObjects[x + Left, y + Down].IsClicked)
+                {
                     neighborBlocks.Add(new int[] { x + Left, y + Down });
                     blockCount++;
                 }
             }
-            if(y + 1 < height) {
-                if(!blockObjects[x + Left, y + Top].isClicked) {
+
+            if (y + 1 < Height)
+            {
+                if (!_blockObjects[x + Left, y + Top].IsClicked)
+                {
                     neighborBlocks.Add(new int[] { x + Left, y + Top });
                     blockCount++;
                 }
             }
         }
-        if(x + 1 < width) {
-            if(!blockObjects[x + Right, y].isClicked) {
+
+        if (x + 1 < Width)
+        {
+            if (!_blockObjects[x + Right, y].IsClicked)
+            {
                 neighborBlocks.Add(new int[] { x + Right, y });
                 blockCount++;
             }
 
-            if(y > 0) {
-                if(!blockObjects[x + Right, y + Down].isClicked) {
+            if (y > 0)
+            {
+                if (!_blockObjects[x + Right, y + Down].IsClicked)
+                {
                     neighborBlocks.Add(new int[] { x + Right, y + Down });
                     blockCount++;
                 }
             }
-            if(y + 1 < height) {
-                if(!blockObjects[x + Right, y + Top].isClicked) {
+
+            if (y + 1 < Height)
+            {
+                if (!_blockObjects[x + Right, y + Top].IsClicked)
+                {
                     neighborBlocks.Add(new int[] { x + Right, y + Top });
                     blockCount++;
                 }
             }
         }
 
-        if(y > 0) {
-            if(!blockObjects[x, y + Down].isClicked) {
+        if (y > 0)
+        {
+            if (!_blockObjects[x, y + Down].IsClicked)
+            {
                 neighborBlocks.Add(new int[] { x, y + Down });
                 blockCount++;
             }
         }
-        if(y + 1 < height) {
-            if(!blockObjects[x, y + Top].isClicked) {
+
+        if (y + 1 < Height)
+        {
+            if (!_blockObjects[x, y + Top].IsClicked)
+            {
                 neighborBlocks.Add(new int[] { x, y + Top });
                 blockCount++;
             }
         }
+
         return blockCount;
     }
 
-    public void RevealClearRegion(int x, int y) {
-        if (x + Right != width && y + Top != height) { // Upper right
-            blockObjects[x + Right, y + Top].Reveal();
+    public void RevealClearRegion(int x, int y)
+    {
+        if (x + Right != Width && y + Top != Height)
+        {
+            // Upper right
+            _blockObjects[x + Right, y + Top].Reveal();
         }
-        if (x + Left >= 0 && y + Top != height) { // Upper left
-            blockObjects[x + Left, y + Top].Reveal();
+
+        if (x + Left >= 0 && y + Top != Height)
+        {
+            // Upper left
+            _blockObjects[x + Left, y + Top].Reveal();
         }
-        if (x + Left >= 0 && y + Down >= 0) { // Lower left
-            blockObjects[x + Left, y + Down].Reveal();
+
+        if (x + Left >= 0 && y + Down >= 0)
+        {
+            // Lower left
+            _blockObjects[x + Left, y + Down].Reveal();
         }
-        if (x + Right != width && y + Down >= 0) { // Lower right
-            blockObjects[x + Right, y + Down].Reveal();
-        } 
-        if (y + Top != height) {
-            blockObjects[x, y + Top].Reveal();
+
+        if (x + Right != Width && y + Down >= 0)
+        {
+            // Lower right
+            _blockObjects[x + Right, y + Down].Reveal();
         }
-        if (y + Down >= 0) {
-            blockObjects[x, y + Down].Reveal();
+
+        if (y + Top != Height)
+        {
+            _blockObjects[x, y + Top].Reveal();
         }
-        if (x + Right != width) {
-            blockObjects[x + Right, y].Reveal();
+
+        if (y + Down >= 0)
+        {
+            _blockObjects[x, y + Down].Reveal();
         }
-        if (x + Left >= 0) {
-            blockObjects[x + Left, y].Reveal();
+
+        if (x + Right != Width)
+        {
+            _blockObjects[x + Right, y].Reveal();
+        }
+
+        if (x + Left >= 0)
+        {
+            _blockObjects[x + Left, y].Reveal();
         }
     }
 
-    public void RevealAllBombs() {
-        IEnumerator RevealAnimated() {
-            for(int x = 0; x < width; x++) {
-                for(int y = 0; y < height; y++) {
-                    if(blocks[x, y].isMine) {
-                        blockObjects[x, y].ForceReveal();
-                        AudioManager.instance.Play($"bomb{UnityEngine.Random.Range(1, 6)}");
+    public void RevealAllBombs()
+    {
+        IEnumerator RevealAnimated()
+        {
+            for (int x = 0; x < Width; x++)
+            {
+                for (int y = 0; y < Height; y++)
+                {
+                    if (_blocks[x, y].IsMine)
+                    {
+                        _blockObjects[x, y].ForceReveal();
+                        AudioManager.instance.Play($"bomb{Random.Range(1, 6)}");
                         yield return new WaitForSeconds(0.1f);
                     }
                 }
@@ -256,7 +364,8 @@ public class BlockSpawner : MonoBehaviour {
         StartCoroutine(RevealAnimated());
     }
 
-    private void OnValidate() {
-        bombCount = Mathf.Clamp(bombCount, 1, width * height - 10);
+    private void OnValidate()
+    {
+        BombCount = Mathf.Clamp(BombCount, 1, Width * Height - 10);
     }
 }

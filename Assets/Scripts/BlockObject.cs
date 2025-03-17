@@ -2,119 +2,156 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class BlockObject : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler {
-    [SerializeField] private Color hoverColor;
-    private Color defaultColor;
+public class BlockObject : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+{
+    [SerializeField]
+    private Color hoverColor;
 
-    private Image image;
+    private Color _defaultColor;
 
-    private GameManager gameManager;
-    private Block block;
-    private int x;
-    private int y;
+    private Image _image;
 
-    public bool isClicked { get; private set; }
-    public bool isFlagged { get; private set; }
-    public bool isHinted => image.sprite == BlockAssets.instance.hinted;
+    private GameManager  _gameManager;
+    private Block _block;
+    private int _x;
+    private int _y;
 
-    private void Awake() {
-        gameManager = FindObjectOfType<GameManager>();
-        image = GetComponent<Image>();
-        defaultColor = image.color;
+    public bool IsClicked { get; private set; }
+    public bool IsFlagged { get; private set; }
+    public bool IsHinted => _image.sprite == BlockAssets.instance.hinted;
+
+    private void Awake()
+    {
+        _gameManager = FindFirstObjectByType<GameManager>();
+        _image = GetComponent<Image>();
+        _defaultColor = _image.color;
     }
 
-    public void Setup(int x, int y) {
-        this.x = x;
-        this.y = y;
+    public void Setup(int x, int y)
+    {
+        _x = x;
+        _y = y;
     }
 
-    public void SetBlock(Block block) {
-        this.block = block;
+    public void SetBlock(Block block)
+    {
+        _block = block;
     }
 
-    public void OnPointerEnter(PointerEventData eventData) {
-        if(!isClicked) {
-            image.color = hoverColor;
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (!IsClicked)
+        {
+            _image.color = hoverColor;
         }
     }
 
-    public void OnPointerExit(PointerEventData eventData) {
-        if(!isClicked) {
-            image.color = defaultColor;
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (!IsClicked)
+        {
+            _image.color = _defaultColor;
         }
     }
 
-    public void OnPointerClick(PointerEventData eventData) {
-        if(isClicked || isHinted) {
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (IsClicked || IsHinted)
+        {
             return;
         }
-        if(eventData.button == PointerEventData.InputButton.Left && !isFlagged) {
-            if(!gameManager.IsFirstClicked) {
-                gameManager.FirstClick();
-                FindObjectOfType<BlockSpawner>().GenerateMap(x, y);
+
+        if (eventData.button == PointerEventData.InputButton.Left && !IsFlagged)
+        {
+            if (!_gameManager.IsFirstClicked)
+            {
+                _gameManager.FirstClick();
+                FindFirstObjectByType<BlockSpawner>().GenerateMap(_x, _y);
             }
+
             AudioManager.instance.Play("click");
             Reveal();
         }
-        else if(eventData.button == PointerEventData.InputButton.Right) {
-            if(isFlagged) {
-                gameManager.AddMineToText(1);
-                image.sprite = BlockAssets.instance.defaultBlock;
+        else if (eventData.button == PointerEventData.InputButton.Right)
+        {
+            if (IsFlagged)
+            {
+                _gameManager.AddMineToText(1);
+                _image.sprite = BlockAssets.instance.defaultBlock;
             }
-            else {
-                gameManager.AddMineToText(-1);
-                image.sprite = BlockAssets.instance.flagged;
+            else
+            {
+                _gameManager.AddMineToText(-1);
+                _image.sprite = BlockAssets.instance.flagged;
             }
+
             AudioManager.instance.Play("flag");
-            isFlagged = !isFlagged;  
+            IsFlagged = !IsFlagged;
         }
     }
 
-    public void Reveal() {
-        if(isClicked) {
+    public void Reveal()
+    {
+        if (IsClicked)
+        {
             return;
         }
-        isClicked = true;
-        image.color = defaultColor;
-        if(block.isMine) {
-            image.sprite = BlockAssets.instance.mine;
-            gameManager.GameOver();
+
+        IsClicked = true;
+        _image.color = _defaultColor;
+        if (_block.IsMine)
+        {
+            _image.sprite = BlockAssets.instance.mine;
+            _gameManager.GameOver();
             return;
         }
-        else if(block.number == 0) {
-            if(isFlagged) {
-                gameManager.AddMineToText(1);
+
+        if (_block.Number == 0)
+        {
+            if (IsFlagged)
+            {
+                _gameManager.AddMineToText(1);
             }
-            image.sprite = BlockAssets.instance.clear;
-            FindObjectOfType<BlockSpawner>().RevealClearRegion(x, y);
+
+            _image.sprite = BlockAssets.instance.clear;
+            FindObjectOfType<BlockSpawner>().RevealClearRegion(_x, _y);
         }
-        else {
-            image.sprite = BlockAssets.instance.numbers[block.number - 1];
+        else
+        {
+            _image.sprite = BlockAssets.instance.numbers[_block.Number - 1];
         }
-        gameManager.DecreaseBombCount();
+
+        _gameManager.DecreaseBombCount();
     }
 
-    public void ForceReveal() {
-        if(isClicked) {
+    public void ForceReveal()
+    {
+        if (IsClicked)
+        {
             return;
         }
 
-        isClicked = true;
-        image.color = defaultColor;
-        if(block.isMine) {
-            image.sprite = BlockAssets.instance.mine;
+        IsClicked = true;
+        _image.color = _defaultColor;
+        if (_block.IsMine)
+        {
+            _image.sprite = BlockAssets.instance.mine;
         }
-        else if(block.number == 0) {
-            image.sprite = BlockAssets.instance.clear;
+        else if (_block.Number == 0)
+        {
+            _image.sprite = BlockAssets.instance.clear;
         }
-        else {
-            image.sprite = BlockAssets.instance.numbers[block.number - 1];
+        else
+        {
+            _image.sprite = BlockAssets.instance.numbers[_block.Number - 1];
         }
     }
 
-    public void MarkHinted() {
-        if (!isFlagged) {
-            image.sprite = BlockAssets.instance.hinted;
+    public void MarkHinted()
+    {
+        if (!IsFlagged)
+        {
+            _image.sprite = BlockAssets.instance.hinted;
         }
     }
 }

@@ -1,12 +1,18 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class SliderController : MonoBehaviour {
-    [SerializeField] private Text valueText;
-    [SerializeField] private string valueName;
+public class SliderController : MonoBehaviour
+{
+    [SerializeField]
+    private Text valueText;
 
-    private void Awake() {
-        if(PlayerPrefs.HasKey(valueName)) {
+    [SerializeField]
+    private string valueName;
+
+    private void Awake()
+    {
+        if (PlayerPrefs.HasKey(valueName))
+        {
             Debug.LogWarning($"Value : {valueName} does not exist");
         }
 
@@ -15,7 +21,8 @@ public class SliderController : MonoBehaviour {
         valueText.text = valueOnStart.ToString("0.00");
     }
 
-    public void OnSliderChanged(float value) {
+    public void OnSliderChanged(float value)
+    {
         PlayerPrefs.SetFloat(valueName, value);
         AudioManager.instance.AdjustVolume();
         valueText.text = value.ToString("0.00");

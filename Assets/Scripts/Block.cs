@@ -1,4 +1,5 @@
-public class Block {
-    public bool isMine;
-    public int number;
+public class Block
+{
+    public bool IsMine;
+    public int Number;
 }
